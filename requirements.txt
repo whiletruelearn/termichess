@@ -1,0 +1,7 @@
+textual==0.82.0
+rich-pixels
+pillow==10.3.0
+chess==1.11.0
+pillow==10.3.0
+rich-pixels==3.0.1
+simpleaudio==1.0.4
