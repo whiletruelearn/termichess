@@ -32,6 +32,9 @@ After installation, you can start the game by simply running:
 
 `termichess`
 
+- To exit out at any time , Press `q` .
+- To restart the game click on the `Restart` button
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.

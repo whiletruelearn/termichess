@@ -90,7 +90,7 @@ class MoveHistory(Static):
 
     def add_move(self, move: str):
         self.moves.append(move)
-        self.update("\n".join(self.moves[-15:]))  # Show last 15 moves
+        self.update("\n".join(self.moves[-25:])) 
 
 class ChessApp(App):
     CSS = """
