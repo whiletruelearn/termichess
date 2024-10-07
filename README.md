@@ -6,7 +6,7 @@
  ┴ └─┘┴└─┴ ┴┴└─┘┴ ┴└─┘└─┘└─┘
 ```
 
-TermiChess is a terminal-based chess game built using Python with the amazing `Textual` library. Play chess right in your terminal with a beautiful interface and Stockfish integration for chess engine.
+TermiChess is a terminal app for playing Chess built using Python with the amazing `Textual` library. Play chess right in your terminal with a minimalistic interface and Stockfish integration for chess engine.
 
 ## Demo
 
