@@ -20,7 +20,7 @@ https://github.com/user-attachments/assets/93f96435-3886-45a3-bae5-7acb3d2458e0
 
 ## Installation
 
-1. Ensure you have Python 3.10 or higher installed.
+1. Please use Python 3.10 within your favourite venv. I have only tested currently only on `python 3.10`
 
 2. Install Stockfish:
 
