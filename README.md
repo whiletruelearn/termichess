@@ -4,6 +4,8 @@ TermiChess is a terminal-based chess game built using Python with the amazing `T
 
 ## Demo
 
+https://github.com/user-attachments/assets/6eea0792-1372-427d-8615-73296f5e8528
+
 ## Features
 
 - Play chess right in your terminal
