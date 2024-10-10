@@ -25,7 +25,7 @@ class ChessSquare(Static):
         if piece:
             color = "white" if piece.color == chess.WHITE else "black"
             piece_name = chess.piece_name(piece.piece_type)
-            image_path = f"{ASSETS_PATH}/pieces/{color}_{piece_name}.png"
+            image_path = f"{ASSETS_PATH}/pieces/v1/{color}_{piece_name}.png"
             img = Image.open(image_path)
             pixels = Pixels.from_image(img)
             self.update(pixels)
