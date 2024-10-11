@@ -10,6 +10,7 @@ import simpleaudio as sa
 from rich_pixels import Pixels
 from PIL import Image
 import pkg_resources
+from random import choice, random
  
 
 PIECE_ASCII_ART = {
@@ -29,7 +30,7 @@ PIECE_ASCII_ART = {
     "scientist" : scientist.PIECE_ASCII_ART
 }
 
-CONF = {'board-theme' : "classic"}
+CONF = {'board-theme' : "classic", 'difficulty' : 'beginner'}
 
 ASSETS_PATH = pkg_resources.resource_filename('termichess', 'assets')
 
@@ -145,8 +146,8 @@ class ChessBoard(Static):
         self.render_board()
 
 class InfoPanel(Static):
-    def update_info(self, turn: str, status: str):
-        self.update(f"[bold]Turn:[/bold] {turn}\n[bold]Status:[/bold] {status}")
+    def update_info(self, turn: str, status: str, difficulty_level : str):
+        self.update(f"[bold]Turn:[/bold] {turn}\n[bold]Status:[/bold] {status}\n[bold]Difficulty level:[/bold] {difficulty_level}")
 
 class MoveHistory(Static):
     def on_mount(self):
@@ -193,7 +194,7 @@ class ConfigScreen(Static):
                     yield ConfigBox("Piece Type", "piece-type", ["retro","png-v1","geometric", "minimalistic","char","computer1","computer2","computer3","glyph","got","mahabharat","potter","rad","scientist"])
                     yield ConfigBox("Board Theme", "board-theme", ["classic", "forest", "ocean"])
                     yield ConfigBox("Player Color", "player_color", ["white", "black", "random"])
-                    yield ConfigBox("Difficulty Level", "difficulty", ["easy", "medium", "hard", "super hard"])
+                    yield ConfigBox("Difficulty Level", "difficulty", ["beginner","easy", "medium", "hard", "super hard"])
 
                 with Center():
                     yield Button("Start Game", id="start-game", variant="primary")
@@ -205,7 +206,7 @@ class ConfigScreen(Static):
         self.set_radio_button("piece-type", "retro")
         self.set_radio_button("board-theme", "classic")
         self.set_radio_button("player_color", "white")
-        self.set_radio_button("difficulty", "easy")
+        self.set_radio_button("difficulty", "beginner")
 
     def set_radio_button(self, radio_set_id: str, value: str):
         radio_set = self.query_one(f"#{radio_set_id}")
@@ -406,9 +407,15 @@ class ChessApp(App):
         ChessSquare.piece_set = CONF["piece-type"]
         player_color = CONF["player_color"]
 
-
-        difficulty_mapping = {"easy": 5, "medium": 10, "hard": 15, "super hard": 20}
-        self.engine_depth = difficulty_mapping.get(CONF["difficulty"], 10)
+        difficulty_mapping = {
+            "beginner": {"depth": 1, "randomness": 0.3},
+            "easy": {"depth": 1, "randomness": 0.1},
+            "medium": {"depth": 2, "randomness": 0},
+            "hard": {"depth": 3, "randomness": 0},
+            "super hard": {"depth": 5, "randomness": 0}
+        }
+        self.engine_settings = difficulty_mapping.get(CONF["difficulty"], {"depth": 1, "randomness": 0.3})
+        self.notify(f"Difficulty set to: {CONF['difficulty']}")
         self.chess_board.render_board()
 
 
@@ -441,8 +448,14 @@ class ChessApp(App):
                 self.set_timer(1, self.make_computer_move)
 
     def make_computer_move(self):
-        result = self.engine.play(self.chess_board.board, chess.engine.Limit(time=2.0))
-        move = result.move
+        board = self.chess_board.board
+        legal_moves = list(board.legal_moves)
+
+        if self.engine_settings["randomness"] > 0 and random() < self.engine_settings["randomness"] and not self.chess_board.board.is_check():
+            move = choice(legal_moves)
+        else:
+            result = self.engine.play(board, chess.engine.Limit(depth=self.engine_settings["depth"]))
+            move = result.move
         self.chess_board.board.push(move)
         self.chess_board.last_move = move
         self.move_history.add_move(f"Computer: {move}")
@@ -464,7 +477,7 @@ class ChessApp(App):
         else:
             turn = "White" if self.chess_board.board.turn == chess.WHITE else "Black"
             status = "Check!" if self.chess_board.board.is_check() else "Normal"
-        self.info_panel.update_info(turn, status)
+        self.info_panel.update_info(turn, status,CONF["difficulty"])
 
     def play_move_sound(self):
         self.move_sound.play()
