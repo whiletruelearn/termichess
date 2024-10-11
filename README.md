@@ -9,11 +9,12 @@
    ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝
 ```
 
-Play a game of chess right in your terminal. Built using the amazing TUI framework `Textual`.
+A game of chess  in your terminal. Built using the amazing TUI framework `Textual`.
 
 ## Demo
 
-https://github.com/user-attachments/assets/dff88fdc-95af-4441-8ad6-2e88cec04e35
+
+https://github.com/user-attachments/assets/305f1e5b-9c76-474f-b30e-5bee12ac3be8
 
 ## Features
 
