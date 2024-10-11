@@ -1,22 +1,28 @@
 # TermiChess
 
 ```
-┌┬┐┌─┐┬─┐┌┬┐┬┌─┐┬ ┬┌─┐┌─┐┌─┐
- │ ├┤ ├┬┘│││││  ├─┤├┤ └─┐└─┐
- ┴ └─┘┴└─┴ ┴┴└─┘┴ ┴└─┘└─┘└─┘
+████████╗███████╗██████╗ ███╗   ███╗██╗ ██████╗██╗  ██╗███████╗███████╗███████╗
+╚══██╔══╝██╔════╝██╔══██╗████╗ ████║██║██╔════╝██║  ██║██╔════╝██╔════╝██╔════╝
+   ██║   █████╗  ██████╔╝██╔████╔██║██║██║     ███████║█████╗  ███████╗███████╗
+   ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║██║██║     ██╔══██║██╔══╝  ╚════██║╚════██║
+   ██║   ███████╗██║  ██║██║ ╚═╝ ██║██║╚██████╗██║  ██║███████╗███████║███████║
+   ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝
 ```
 
-TermiChess is a terminal app for playing Chess built using Python with the amazing `Textual` library. Play chess in your terminal with a minimalistic interface and Stockfish integration for chess engine.
+Play a game of chess right in your terminal. Built using the amazing TUI framework `Textual`.
 
 ## Demo
 
-https://github.com/user-attachments/assets/93f96435-3886-45a3-bae5-7acb3d2458e0
+https://github.com/user-attachments/assets/dff88fdc-95af-4441-8ad6-2e88cec04e35
 
 ## Features
 
-- Play chess right in your terminal
-- Stockfish integration for chess engine
-- Move validation and legal move highlighting
+- ♟️ Play chess right in your terminal
+- 🧠 Stockfish integration for chess engine
+- ✅ Move validation and legal move highlighting
+- 🎨 Change board themes
+- 🤓 Variety of geeky board pieces
+- ⚙️ Configuration menu for different options to change on the fly
 
 ## Installation
 
