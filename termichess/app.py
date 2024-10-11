@@ -93,6 +93,7 @@ class ChessBoard(Static):
         self.board = chess.Board()
         self.last_move = None
         self.possible_moves = set()
+        self.is_flipped = False
 
     def compose(self) -> ComposeResult:
         with Grid(id="board-grid"):
@@ -106,17 +107,17 @@ class ChessBoard(Static):
 
 
     def render_board(self):
-
         light_bg, dark_bg = get_theme_colors(CONF["board-theme"])
 
         for square in chess.SQUARES:
             square_name = chess.SQUARE_NAMES[square]
-            piece = self.board.piece_at(square)
+            display_square = chess.square_mirror(square) if self.is_flipped else square
+            piece = self.board.piece_at(display_square)
             square_widget = self.query_one(f"#{square_name}", ChessSquare)
 
             selected_square = CONF.get('selected_square')
 
-            if square not in self.possible_moves:
+            if display_square not in self.possible_moves:
                 square_widget.add_class("light" if (ord(square_name[0]) - ord('a') + int(square_name[1])) % 2 == 0 else "dark")
                 square_widget.styles.background = light_bg if square_widget.has_class("light") else dark_bg
 
@@ -124,11 +125,11 @@ class ChessBoard(Static):
                 square_widget.add_class("selected")
                 square_widget.styles.background = "#aaa23a"
 
-            if self.last_move and square in [self.last_move.from_square, self.last_move.to_square]:
+            if self.last_move and display_square in [self.last_move.from_square, self.last_move.to_square]:
                 square_widget.add_class("highlight")
                 square_widget.styles.background = "#aaa23a"
 
-            if square in self.possible_moves:
+            if display_square in self.possible_moves:
                 square_widget.add_class("possible-move-light" if (ord(square_name[0]) - ord('a') + int(square_name[1])) % 2 == 0 else "possible-move-dark")
                 square_widget.styles.background = "#c896db" if square_widget.has_class("possible-move-light") else "#8b4b8b"
 
@@ -411,6 +412,8 @@ class ChessApp(App):
         if self.player_color == "random":
             self.player_color = choice(["white","black"])
 
+        self.chess_board.is_flipped = (self.player_color == "black")
+
         difficulty_mapping = {
             "beginner": {"depth": 1, "randomness": 0.3},
             "easy": {"depth": 1, "randomness": 0.1},
@@ -426,11 +429,13 @@ class ChessApp(App):
 
     def handle_click(self, square: ChessSquare) -> None:
         if self.selected_square is None:
-            if square.piece and square.piece.color == self.chess_board.board.turn:
+            if square.piece and square.piece.color == (chess.BLACK if self.player_color == "black" else chess.WHITE):
                 self.selected_square = square
                 square.add_class("selected")
                 CONF["selected_square"] = self.selected_square
                 from_square = chess.parse_square(square.id)
+                if self.chess_board.is_flipped:
+                    from_square = chess.square_mirror(from_square)
                 self.chess_board.highlight_possible_moves(from_square)
         else:
             if square != self.selected_square:
@@ -441,6 +446,8 @@ class ChessApp(App):
 
     def move_piece(self, from_square: ChessSquare, to_square: ChessSquare):
         move = chess.Move.from_uci(f"{from_square.id}{to_square.id}")
+        if self.chess_board.is_flipped:
+            move = chess.Move(chess.square_mirror(move.from_square), chess.square_mirror(move.to_square))
         if move in self.chess_board.board.legal_moves:
             self.chess_board.board.push(move)
             self.chess_board.last_move = move
@@ -456,14 +463,18 @@ class ChessApp(App):
         board = self.chess_board.board
         legal_moves = list(board.legal_moves)
 
-        if self.engine_settings["randomness"] > 0 and random() < self.engine_settings["randomness"] and not self.chess_board.board.is_check():
+        if self.engine_settings["randomness"] > 0 and random() < self.engine_settings["randomness"] and not board.is_check():
             move = choice(legal_moves)
         else:
             result = self.engine.play(board, chess.engine.Limit(depth=self.engine_settings["depth"]))
             move = result.move
+        
         self.chess_board.board.push(move)
         self.chess_board.last_move = move
-        self.move_history.add_move(f"Computer ({('white' if self.player_color == 'black' else 'black')}): {move}")
+        displayed_move = move
+        if self.chess_board.is_flipped:
+            displayed_move = chess.Move(chess.square_mirror(move.from_square), chess.square_mirror(move.to_square))
+        self.move_history.add_move(f"Computer ({('white' if self.player_color == 'black' else 'black')}): {displayed_move}")
         self.chess_board.render_board()
         self.play_move_sound()
         self.update_info()
