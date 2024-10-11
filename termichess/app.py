@@ -369,7 +369,8 @@ class ChessApp(App):
         super().__init__()
         self.engine = chess.engine.SimpleEngine.popen_uci("stockfish")
         self.move_sound = sa.WaveObject.from_wave_file(f"{ASSETS_PATH}/sound/move.wav")
-
+        self.player_color = "white"
+        
     def compose(self) -> ComposeResult:
         yield ConfigScreen()
         yield ChessBoard(classes="hidden")
@@ -405,7 +406,10 @@ class ChessApp(App):
     def apply_config(self):
         
         ChessSquare.piece_set = CONF["piece-type"]
-        player_color = CONF["player_color"]
+        self.player_color = CONF["player_color"]
+
+        if self.player_color == "random":
+            self.player_color = choice(["white","black"])
 
         difficulty_mapping = {
             "beginner": {"depth": 1, "randomness": 0.3},
@@ -416,6 +420,7 @@ class ChessApp(App):
         }
         self.engine_settings = difficulty_mapping.get(CONF["difficulty"], {"depth": 1, "randomness": 0.3})
         self.notify(f"Difficulty set to: {CONF['difficulty']}")
+        self.notify(f"Player color: {self.player_color}")
         self.chess_board.render_board()
 
 
@@ -458,7 +463,7 @@ class ChessApp(App):
             move = result.move
         self.chess_board.board.push(move)
         self.chess_board.last_move = move
-        self.move_history.add_move(f"Computer: {move}")
+        self.move_history.add_move(f"Computer ({('white' if self.player_color == 'black' else 'black')}): {move}")
         self.chess_board.render_board()
         self.play_move_sound()
         self.update_info()
@@ -475,9 +480,10 @@ class ChessApp(App):
                 status = "Game Over - Draw!"
             turn = "Game Ended"
         else:
-            turn = "White" if self.chess_board.board.turn == chess.WHITE else "Black"
+            current_turn = "White" if self.chess_board.board.turn == chess.WHITE else "Black"
+            turn = f"{current_turn} ({'Player' if current_turn.lower() == self.player_color else 'Computer'})"
             status = "Check!" if self.chess_board.board.is_check() else "Normal"
-        self.info_panel.update_info(turn, status,CONF["difficulty"])
+        self.info_panel.update_info(turn, status, CONF["difficulty"])
 
     def play_move_sound(self):
         self.move_sound.play()
@@ -504,6 +510,10 @@ class ChessApp(App):
         self.current_screen = "game"
         self.toggle_screen()
         self.chess_board.render_board()
+        self.update_info()
+
+        if self.player_color == "black":
+            self.set_timer(1,self.make_computer_move)
 
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
