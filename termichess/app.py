@@ -33,6 +33,23 @@ CONF = {'board-theme' : "classic"}
 
 ASSETS_PATH = pkg_resources.resource_filename('termichess', 'assets')
 
+
+def get_theme_colors(theme: str):
+    
+    if theme == "classic":
+        light_bg = "#ebecd0"
+        dark_bg = "#739552"
+    elif theme == "forest":
+        light_bg = "#ebecd0"
+        dark_bg = "#2c003e"
+    elif theme == "ocean":
+        light_bg = "#ebecd0"
+        dark_bg = "#001f3f"
+    else:
+        raise ValueError(f"Invalid theme: {theme}")
+    return light_bg, dark_bg
+
+
 class ChessSquare(Static):
     piece_set = "retro" #default piece set
 
@@ -85,68 +102,35 @@ class ChessBoard(Static):
 
 
 
-    def _get_theme(self):
-        theme = CONF["board-theme"]
-        
 
-        if theme == "classic":
-            light_bg = "#ebecd0"
-            dark_bg = "#739552"
-        elif theme == "forest":
-            light_bg = "#ebecd0"
-            dark_bg = "#2c003e"
-        elif theme == "ocean":
-            light_bg = "#ebecd0"
-            dark_bg = "#001f3f"
-
-        return light_bg, dark_bg
 
     def render_board(self):
 
-        light_bg, dark_bg = self._get_theme()
-        
+        light_bg, dark_bg = get_theme_colors(CONF["board-theme"])
 
         for square in chess.SQUARES:
             square_name = chess.SQUARE_NAMES[square]
             piece = self.board.piece_at(square)
             square_widget = self.query_one(f"#{square_name}", ChessSquare)
 
-            
             selected_square = CONF.get('selected_square')
 
-            
-                
             if square not in self.possible_moves:
-
-                if (ord(square_name[0]) - ord('a') + int(square_name[1])) % 2 == 0:
-                    square_widget.add_class("light")
-                    square_widget.styles.background = light_bg
-                else:
-                    square_widget.add_class("dark")
-                    square_widget.styles.background = dark_bg
-            
+                square_widget.add_class("light" if (ord(square_name[0]) - ord('a') + int(square_name[1])) % 2 == 0 else "dark")
+                square_widget.styles.background = light_bg if square_widget.has_class("light") else dark_bg
 
             if selected_square and selected_square.id == square_widget.id:
                 square_widget.add_class("selected")
                 square_widget.styles.background = "#aaa23a"
-            
+
             if self.last_move and square in [self.last_move.from_square, self.last_move.to_square]:
                 square_widget.add_class("highlight")
                 square_widget.styles.background = "#aaa23a"
-            
-            if square in self.possible_moves:
-                if (ord(square_name[0]) - ord('a') + int(square_name[1])) % 2 == 0:
-                    square_widget.add_class("possible-move-light")
-                    square_widget.styles.background = "#c896db"
-                else:
-                    square_widget.add_class("possible-move-dark")
-                    square_widget.styles.background = "#8b4b8b"
-                
 
-      
-                
-   
-            
+            if square in self.possible_moves:
+                square_widget.add_class("possible-move-light" if (ord(square_name[0]) - ord('a') + int(square_name[1])) % 2 == 0 else "possible-move-dark")
+                square_widget.styles.background = "#c896db" if square_widget.has_class("possible-move-light") else "#8b4b8b"
+
             square_widget.set_piece(piece)
 
     def get_possible_moves(self, from_square):
