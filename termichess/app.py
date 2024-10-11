@@ -135,8 +135,13 @@ class ChessBoard(Static):
                 square_widget.styles.background = "#aaa23a"
             
             if square in self.possible_moves:
-                square_widget.add_class("possible-move")
-                square_widget.styles.background = "#c896db"
+                if (ord(square_name[0]) - ord('a') + int(square_name[1])) % 2 == 0:
+                    square_widget.add_class("possible-move-light")
+                    square_widget.styles.background = "#c896db"
+                else:
+                    square_widget.add_class("possible-move-dark")
+                    square_widget.styles.background = "#8b4b8b"
+                
 
       
                 
