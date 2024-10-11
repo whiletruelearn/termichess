@@ -69,6 +69,6 @@ PIECE_ASCII_ART = {
  Ω
 /N\\
 ▀▀▀▀
-""",  # Newton (king)
+"""  # Newton (king)
    
 }
