@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="termichess",
-    version="0.1.2",
+    version="0.1.3",
     author="Krishna Sangeeth KS",
     author_email="kskrishnasangeeth@gmail.com",
     description="A chess game on your terminal",
