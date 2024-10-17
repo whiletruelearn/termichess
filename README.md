@@ -40,9 +40,11 @@ After installation, you can start the game by simply running:
 
 ## Running via Docker
 
-You can also run TermiChess via Docker:
+You can also run `termichess` via Docker if that's what you prefer.
 
 `docker run -it ghcr.io/whiletruelearn/termichess:latest termichess`
+
+Note : Please keep `sound` config to off while using `docker`
 
 ## Contributing
 
