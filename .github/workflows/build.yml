@@ -55,10 +55,13 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image (multi-arch)
         uses: docker/build-push-action@v3
         with:
           context: .
           push: true
           tags: |
             ghcr.io/${{ github.repository }}:latest
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            DOCKER_CLI_EXPERIMENTAL=enabled
