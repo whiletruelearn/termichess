@@ -112,9 +112,9 @@ class ChessApp(App):
     }
 
     #options-grid {
-        grid-size: 4;
+        grid-size: 5;
         grid-gutter: 1 2;
-        grid-columns: 1fr 1fr 1fr 1fr;
+        grid-columns: 1fr 1fr 1fr 1fr 1fr;
         margin-bottom: 1;
     }
 
@@ -155,6 +155,7 @@ class ChessApp(App):
         self.engine = SimpleEngine.popen_uci("stockfish")
         self.move_sound = sa.WaveObject.from_wave_file(f"{ASSETS_PATH}/sound/move.wav")
         self.player_color = "white"
+        self.sound_enabled = True
         
     def compose(self) -> ComposeResult:
         yield ConfigScreen()
@@ -192,6 +193,7 @@ class ChessApp(App):
         
         ChessSquare.piece_set = CONF["piece-type"]
         self.player_color = CONF["player_color"]
+        self.sound_enabled = (CONF["sound"] == "on")
 
         if self.player_color == "random":
             self.player_color = choice(["white","black"])
@@ -281,7 +283,8 @@ class ChessApp(App):
         self.info_panel.update_info(turn, status, CONF["difficulty"])
 
     def play_move_sound(self):
-        self.move_sound.play()
+        if self.sound_enabled:
+            self.move_sound.play()
 
     def check_game_over(self):
         if self.chess_board.board.is_game_over():

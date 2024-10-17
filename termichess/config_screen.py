@@ -1,6 +1,6 @@
 from textual.containers import  Grid, Center, Vertical
 from textual.widgets import Static, Button, RadioButton, RadioSet
-from termichess.utils import CONF, THEME_COLORS
+from termichess.utils import CONF, THEME_COLORS, PIECE_ASCII_ART
 
 
 class RetroTitle(Static):
@@ -29,7 +29,7 @@ class ConfigBox(Static):
 
 
 
-PIECE_TYPES = ["retro","png-v1","geometric", "minimalistic","char","computer1","computer2","computer3","glyph","got","mahabharat","potter","rad","scientist"]
+
 
 class ConfigScreen(Static):
     
@@ -40,10 +40,11 @@ class ConfigScreen(Static):
                 yield RetroTitle()
                 
                 with Grid(id="options-grid", classes="options"):
-                    yield ConfigBox("Piece Type", "piece-type", PIECE_TYPES )
+                    yield ConfigBox("Piece Type", "piece-type", list(PIECE_ASCII_ART.keys()) + ['png-v1'])
                     yield ConfigBox("Board Theme", "board-theme", THEME_COLORS.keys())
                     yield ConfigBox("Player Color", "player_color", ["white", "black", "random"])
                     yield ConfigBox("Difficulty Level", "difficulty", ["beginner","easy", "medium", "hard", "super hard"])
+                    yield ConfigBox("Sound", "sound", ["on", "off"])
 
                 with Center():
                     yield Button("Start Game", id="start-game", variant="primary")
@@ -56,6 +57,7 @@ class ConfigScreen(Static):
         self.set_radio_button("board-theme", "classic")
         self.set_radio_button("player_color", "white")
         self.set_radio_button("difficulty", "beginner")
+        self.set_radio_button("sound", "on")
 
     def set_radio_button(self, radio_set_id: str, value: str):
         radio_set = self.query_one(f"#{radio_set_id}")

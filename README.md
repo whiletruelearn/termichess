@@ -1,10 +1,8 @@
-
 # Termichess
 
-A game of chess  in your terminal. Built using the amazing TUI framework `Textual`.
+A game of chess in your terminal. Built using the amazing TUI framework `Textual`.
 
 ## Demo
-
 
 https://github.com/user-attachments/assets/305f1e5b-9c76-474f-b30e-5bee12ac3be8
 
@@ -39,6 +37,12 @@ After installation, you can start the game by simply running:
 
 - To exit out at any time , Press `q` .
 - To restart the game click on the `Restart` button
+
+## Running via Docker
+
+You can also run TermiChess via Docker:
+
+`docker run -it ghcr.io/whiletruelearn/termichess:latest termichess`
 
 ## Contributing
 
