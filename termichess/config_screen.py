@@ -1,6 +1,6 @@
 from textual.containers import  Grid, Center, Vertical
 from textual.widgets import Static, Button, RadioButton, RadioSet
-from termichess.utils import CONF
+from termichess.utils import CONF, THEME_COLORS
 
 
 class RetroTitle(Static):
@@ -27,6 +27,10 @@ class ConfigBox(Static):
             for option in self.options:
                 yield RadioButton(option, value=option.lower())
 
+
+
+PIECE_TYPES = ["retro","png-v1","geometric", "minimalistic","char","computer1","computer2","computer3","glyph","got","mahabharat","potter","rad","scientist"]
+
 class ConfigScreen(Static):
     
 
@@ -36,8 +40,8 @@ class ConfigScreen(Static):
                 yield RetroTitle()
                 
                 with Grid(id="options-grid", classes="options"):
-                    yield ConfigBox("Piece Type", "piece-type", ["retro","png-v1","geometric", "minimalistic","char","computer1","computer2","computer3","glyph","got","mahabharat","potter","rad","scientist"])
-                    yield ConfigBox("Board Theme", "board-theme", ["classic", "forest", "ocean"])
+                    yield ConfigBox("Piece Type", "piece-type", PIECE_TYPES )
+                    yield ConfigBox("Board Theme", "board-theme", THEME_COLORS.keys())
                     yield ConfigBox("Player Color", "player_color", ["white", "black", "random"])
                     yield ConfigBox("Difficulty Level", "difficulty", ["beginner","easy", "medium", "hard", "super hard"])
 
