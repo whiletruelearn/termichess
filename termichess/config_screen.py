@@ -27,6 +27,10 @@ class ConfigBox(Static):
             for option in self.options:
                 yield RadioButton(option, value=option.lower())
 
+THEMES = ["classic", "forest", "ocean","midnight","autumn","lavender","moss","marble","crimson","emerald","sakura","royal","coffee"]
+
+PIECE_TYPES = ["retro","png-v1","geometric", "minimalistic","char","computer1","computer2","computer3","glyph","got","mahabharat","potter","rad","scientist"]
+
 class ConfigScreen(Static):
     
 
@@ -36,8 +40,8 @@ class ConfigScreen(Static):
                 yield RetroTitle()
                 
                 with Grid(id="options-grid", classes="options"):
-                    yield ConfigBox("Piece Type", "piece-type", ["retro","png-v1","geometric", "minimalistic","char","computer1","computer2","computer3","glyph","got","mahabharat","potter","rad","scientist"])
-                    yield ConfigBox("Board Theme", "board-theme", ["classic", "forest", "ocean"])
+                    yield ConfigBox("Piece Type", "piece-type", PIECE_TYPES )
+                    yield ConfigBox("Board Theme", "board-theme", THEMES)
                     yield ConfigBox("Player Color", "player_color", ["white", "black", "random"])
                     yield ConfigBox("Difficulty Level", "difficulty", ["beginner","easy", "medium", "hard", "super hard"])
 
