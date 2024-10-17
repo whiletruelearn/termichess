@@ -11,7 +11,7 @@ from termichess.utils import ASSETS_PATH, CONF
 from termichess.config_screen import ConfigScreen
 from termichess.sidebar import InfoPanel, MoveHistory
 from termichess.chess_board import ChessBoard, ChessSquare 
-
+from termichess.promotion import PawnPromotion
 
 
 
