@@ -1,232 +1,16 @@
 from textual.app import App, ComposeResult
-from textual.containers import Container, Grid, Center, Vertical, Horizontal
-from textual.widgets import Static, Button, RadioButton, RadioSet
+from textual.containers import Container, Horizontal
+from textual.widgets import Button
 from textual import events
 from textual.reactive import reactive
-from termichess.assets.pieces.asciiart import computer_first, computer_second, computer_third, retro, geometric, minimalistic,char, glyph, got, mahabharat, potter, rad, scientist
-import chess
-import chess.engine
 import simpleaudio as sa
-from rich_pixels import Pixels
-from PIL import Image
-import pkg_resources
 from random import choice, random
- 
-
-PIECE_ASCII_ART = {
-    
-    "retro": retro.PIECE_ASCII_ART,
-    "geometric": geometric.PIECE_ASCII_ART,
-    "minimalistic": minimalistic.PIECE_ASCII_ART,
-    "char" : char.PIECE_ASCII_ART,
-    "computer1" : computer_first.PIECE_ASCII_ART,
-    "computer2" : computer_second.PIECE_ASCII_ART,
-    "computer3" : computer_third.PIECE_ASCII_ART,
-    "glyph" : glyph.PIECE_ASCII_ART,
-    "got" : got.PIECE_ASCII_ART,
-    "mahabharat" : mahabharat.PIECE_ASCII_ART,
-    "potter" : potter.PIECE_ASCII_ART,
-    "rad" : rad.PIECE_ASCII_ART,
-    "scientist" : scientist.PIECE_ASCII_ART
-}
-
-CONF = {'board-theme' : "classic", 'difficulty' : 'beginner'}
-
-ASSETS_PATH = pkg_resources.resource_filename('termichess', 'assets')
-
-
-def get_theme_colors(theme: str):
-    
-    if theme == "classic":
-        light_bg = "#ebecd0"
-        dark_bg = "#739552"
-    elif theme == "forest":
-        light_bg = "#ebecd0"
-        dark_bg = "#2c003e"
-    elif theme == "ocean":
-        light_bg = "#ebecd0"
-        dark_bg = "#001f3f"
-    else:
-        raise ValueError(f"Invalid theme: {theme}")
-    return light_bg, dark_bg
-
-
-class ChessSquare(Static):
-    piece_set = "retro" #default piece set
-
-    def __init__(self, id: str):
-        super().__init__(id=id)
-        self.piece = None
-        self.add_class("light" if (ord(id[0]) - ord('a') + int(id[1])) % 2 == 0 else "dark")
-
-    
-
-    def set_piece(self, piece: chess.Piece | None):
-
-        
-        
-        self.piece = piece
-        if piece:
-            color = "white" if piece.color == chess.WHITE else "black"
-            piece_symbol = piece.symbol().lower()
-            piece_name = chess.piece_name(piece.piece_type)
-            if ChessSquare.piece_set in PIECE_ASCII_ART:
-                ascii_art = PIECE_ASCII_ART[ChessSquare.piece_set][piece_symbol]
-                colored_ascii_art = f"[bold {color}]{ascii_art}[/bold {color}]"
-                self.update(colored_ascii_art)
-            
-            if ChessSquare.piece_set == "png-v1":
-                image_path = f"{ASSETS_PATH}/pieces/v1/{color}_{piece_name}.png"
-                img = Image.open(image_path)
-                pixels = Pixels.from_image(img)
-                self.update(pixels)
-        else:
-            self.update("")
-
-
-    def on_click(self) -> None:
-        self.app.handle_click(self)
-
-class ChessBoard(Static):
-    def __init__(self, classes:str = None):
-        super().__init__(classes=classes)
-        self.board = chess.Board()
-        self.last_move = None
-        self.possible_moves = set()
-        self.is_flipped = False
-
-    def compose(self) -> ComposeResult:
-        with Grid(id="board-grid"):
-            for row in range(8):
-                for col in range(8):
-                    square_id = f"{chr(97 + col)}{8 - row}"
-                    yield ChessSquare(square_id)
-
-
-
-
-
-    def render_board(self):
-        light_bg, dark_bg = get_theme_colors(CONF["board-theme"])
-
-        for square in chess.SQUARES:
-            square_name = chess.SQUARE_NAMES[square]
-            display_square = chess.square_mirror(square) if self.is_flipped else square
-            piece = self.board.piece_at(display_square)
-            square_widget = self.query_one(f"#{square_name}", ChessSquare)
-
-            selected_square = CONF.get('selected_square')
-
-            if display_square not in self.possible_moves:
-                square_widget.add_class("light" if (ord(square_name[0]) - ord('a') + int(square_name[1])) % 2 == 0 else "dark")
-                square_widget.styles.background = light_bg if square_widget.has_class("light") else dark_bg
-
-            if selected_square and selected_square.id == square_widget.id:
-                square_widget.add_class("selected")
-                square_widget.styles.background = "#aaa23a"
-
-            if self.last_move and display_square in [self.last_move.from_square, self.last_move.to_square]:
-                square_widget.add_class("highlight")
-                square_widget.styles.background = "#aaa23a"
-
-            if display_square in self.possible_moves:
-                square_widget.add_class("possible-move-light" if (ord(square_name[0]) - ord('a') + int(square_name[1])) % 2 == 0 else "possible-move-dark")
-                square_widget.styles.background = "#c896db" if square_widget.has_class("possible-move-light") else "#8b4b8b"
-
-            square_widget.set_piece(piece)
-
-    def get_possible_moves(self, from_square):
-        return {move.to_square for move in self.board.legal_moves if move.from_square == from_square}
-
-    def highlight_possible_moves(self, from_square):
-        self.possible_moves = self.get_possible_moves(from_square)
-        self.render_board()
-
-    def clear_possible_moves(self):
-        self.possible_moves.clear()
-        self.render_board()
-
-class InfoPanel(Static):
-    def update_info(self, turn: str, status: str, difficulty_level : str):
-        self.update(f"[bold]Turn:[/bold] {turn}\n[bold]Status:[/bold] {status}\n[bold]Difficulty level:[/bold] {difficulty_level}")
-
-class MoveHistory(Static):
-    def on_mount(self):
-        self.moves = []
-
-    def add_move(self, move: str):
-        self.moves.append(move)
-        self.update("\n".join(self.moves[-25:])) 
-
-
-class RetroTitle(Static):
-    def render(self):
-        return """
-████████╗███████╗██████╗ ███╗   ███╗██╗ ██████╗██╗  ██╗███████╗███████╗███████╗
-╚══██╔══╝██╔════╝██╔══██╗████╗ ████║██║██╔════╝██║  ██║██╔════╝██╔════╝██╔════╝
-   ██║   █████╗  ██████╔╝██╔████╔██║██║██║     ███████║█████╗  ███████╗███████╗
-   ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║██║██║     ██╔══██║██╔══╝  ╚════██║╚════██║
-   ██║   ███████╗██║  ██║██║ ╚═╝ ██║██║╚██████╗██║  ██║███████╗███████║███████║
-   ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝
-        """
-    
-class ConfigBox(Static):
-    def __init__(self, title: str, id: str, options: list[str]):
-        super().__init__()
-        self.title = title
-        self.box_id = id
-        self.options = options
-
-    def compose(self) -> ComposeResult:
-        yield Static(self.title, classes="box-title")
-        with RadioSet(id=self.box_id):
-            for option in self.options:
-                yield RadioButton(option, value=option.lower())
-
-class ConfigScreen(Static):
-    
-
-    def compose(self):
-        with Center():
-            with Vertical(id="config-container"):
-                yield RetroTitle()
-                
-                with Grid(id="options-grid", classes="options"):
-                    yield ConfigBox("Piece Type", "piece-type", ["retro","png-v1","geometric", "minimalistic","char","computer1","computer2","computer3","glyph","got","mahabharat","potter","rad","scientist"])
-                    yield ConfigBox("Board Theme", "board-theme", ["classic", "forest", "ocean"])
-                    yield ConfigBox("Player Color", "player_color", ["white", "black", "random"])
-                    yield ConfigBox("Difficulty Level", "difficulty", ["beginner","easy", "medium", "hard", "super hard"])
-
-                with Center():
-                    yield Button("Start Game", id="start-game", variant="primary")
-                
-                yield Static("Built with ❤️  by @whiletruelearn", id="credit-line")
-
-    def on_mount(self):
-
-        self.set_radio_button("piece-type", "retro")
-        self.set_radio_button("board-theme", "classic")
-        self.set_radio_button("player_color", "white")
-        self.set_radio_button("difficulty", "beginner")
-
-    def set_radio_button(self, radio_set_id: str, value: str):
-        radio_set = self.query_one(f"#{radio_set_id}")
-        for child in radio_set.children:
-            if isinstance(child, RadioButton) and child.value == value:
-                child.value = True
-                break
-
-    def on_radio_set_changed(self, event: RadioSet.Changed) -> None:
-        radio_set = event.radio_set
-        selected_button = radio_set.pressed_button
-        if selected_button:
-            CONF[radio_set.id] = selected_button.label._text[0]
-            
-
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id == "start-game":
-            self.app.apply_config()
-            self.app.start_game()
+import chess 
+from chess.engine import SimpleEngine
+from termichess.utils import ASSETS_PATH, CONF
+from termichess.config_screen import ConfigScreen
+from termichess.sidebar import InfoPanel, MoveHistory
+from termichess.chess_board import ChessBoard, ChessSquare 
 
 
 
@@ -368,7 +152,7 @@ class ChessApp(App):
 
     def __init__(self):
         super().__init__()
-        self.engine = chess.engine.SimpleEngine.popen_uci("stockfish")
+        self.engine = SimpleEngine.popen_uci("stockfish")
         self.move_sound = sa.WaveObject.from_wave_file(f"{ASSETS_PATH}/sound/move.wav")
         self.player_color = "white"
         
