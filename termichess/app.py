@@ -201,7 +201,7 @@ class ChessApp(App):
         self.chess_board.is_flipped = (self.player_color == "black")
 
         difficulty_mapping = {
-            "beginner": {"depth": 1, "randomness": 0.3},
+            "beginner": {"depth": 1, "randomness": 0.9},
             "easy": {"depth": 1, "randomness": 0.1},
             "medium": {"depth": 2, "randomness": 0},
             "hard": {"depth": 3, "randomness": 0},
@@ -234,6 +234,13 @@ class ChessApp(App):
         move = chess.Move.from_uci(f"{from_square.id}{to_square.id}")
         if self.chess_board.is_flipped:
             move = chess.Move(chess.square_mirror(move.from_square), chess.square_mirror(move.to_square))
+
+        if self.chess_board.board.piece_at(move.from_square).piece_type == chess.PAWN:
+            
+            if move.to_square in chess.SquareSet(chess.BB_BACKRANKS):
+                self.notify("Time for pawn promotion")
+                if not self.handle_pawn_promotion(move):
+                    return
         if move in self.chess_board.board.legal_moves:
             self.chess_board.board.push(move)
             self.chess_board.last_move = move
@@ -325,6 +332,27 @@ class ChessApp(App):
     def on_key(self, event: events.Key):
         if event.key == "q":
             self.exit()
+
+    def handle_pawn_promotion(self, move):
+        promotion_dialog = PawnPromotion()
+        promotion_piece = self.push_screen(promotion_dialog)
+        if self.check_promotion(move, promotion_piece):
+            self.chess_board.board.push(move)
+            self.chess_board.render_board()  
+            self.move_history.add_move(f"Player: {move}")
+            self.play_move_sound()
+            self.update_info()
+            self.check_game_over()
+            if not self.chess_board.board.is_game_over():
+                self.set_timer(1, self.make_computer_move)
+
+    def check_promotion(self, move, promotion_piece):
+        if promotion_piece is not None:
+            move.promotion = promotion_piece
+            return True
+        return False
+
+    
 
 if __name__ == "__main__":
     app = ChessApp()
