@@ -237,10 +237,10 @@ class ChessApp(App):
 
         if self.chess_board.board.piece_at(move.from_square).piece_type == chess.PAWN:
             
-            if move.to_square in chess.SquareSet(chess.BB_BACKRANKS):
+            if move.to_square in chess.SquareSet(chess.BB_BACKRANKS) and move.from_square in chess.SquareSet(chess.BB_RANK_7):
                 self.notify("Time for pawn promotion")
-                if not self.handle_pawn_promotion(move):
-                    return
+                self.handle_pawn_promotion(move)
+                
         if move in self.chess_board.board.legal_moves:
             self.chess_board.board.push(move)
             self.chess_board.last_move = move
@@ -334,11 +334,20 @@ class ChessApp(App):
             self.exit()
 
     def handle_pawn_promotion(self, move):
-        promotion_dialog = PawnPromotion()
-        promotion_piece = self.push_screen(promotion_dialog)
-        if self.check_promotion(move, promotion_piece):
+        def on_promotion_selected(piece):
+            self.handle_promotion(move, piece)
+            self.pop_screen()
+
+        promotion_screen = PawnPromotion(on_promotion_selected)
+        self.push_screen(promotion_screen)
+
+    def handle_promotion(self, move, promoted_piece):
+        if promoted_piece:
+            move.promotion = promoted_piece
             self.chess_board.board.push(move)
-            self.chess_board.render_board()  
+            self.chess_board.board.remove_piece_at(move.to_square)
+            self.chess_board.board.set_piece_at(move.to_square, chess.Piece(promoted_piece, chess.WHITE), True)
+            self.chess_board.render_board()
             self.move_history.add_move(f"Player: {move}")
             self.play_move_sound()
             self.update_info()
@@ -346,11 +355,6 @@ class ChessApp(App):
             if not self.chess_board.board.is_game_over():
                 self.set_timer(1, self.make_computer_move)
 
-    def check_promotion(self, move, promotion_piece):
-        if promotion_piece is not None:
-            move.promotion = promotion_piece
-            return True
-        return False
 
     
 

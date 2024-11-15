@@ -1,64 +1,61 @@
 from textual.screen import ModalScreen
-from textual.widgets import RadioSet, RadioButton, Label
+from textual.widgets import Label, Button
 import chess
 
 class PawnPromotion(ModalScreen):
     CSS = """
-    PawnPromotion {
+        PawnPromotion {
         height: auto;
-        width: 50%;
+        width: 30%;
         background: $surface;
         border: tall $panel;
-        padding: 2;
+        padding: 1;
         layout: grid;
         grid-rows: auto 1fr;
-        grid-gutter: 1 2;
         grid-columns: 1fr 1fr 1fr 1fr;
+        align: center middle;
     }
 
     #title {
         dock: top;
-        height: 4;
+        height: 3;
         background: $boost;
         padding: 0 1;
         column-span: 4;
     }
 
-    #options {
-        padding: 1;
-        column-span: 4;
-    }
-
-    RadioButton {
-        width: 100%;
+    Button {
+        width: 50%;
+        height: 3;
     }
     """
 
-    def __init__(self):
+    def __init__(self, on_promotion_selected):
         super().__init__("Pawn Promotion")
-        self.promotion_piece = None
-        self.selected_button = None 
+        self.on_promotion_selected = on_promotion_selected
+        self.mapping = {"Queen" : chess.QUEEN,
+                        "Rook" : chess.ROOK,
+                        "Bishop" : chess.BISHOP,
+                        "Knight" : chess.KNIGHT} 
 
     def compose(self):
         yield Label("Select Promotion Piece", id="title")
-        with RadioSet(id="options", name="promotion_piece") as radio_set:
-            yield RadioButton("Queen", value=chess.QUEEN)
-            yield RadioButton("Rook", value=chess.ROOK)
-            yield RadioButton("Bishop", value=chess.BISHOP)
-            yield RadioButton("Knight", value=chess.KNIGHT)
-        radio_set.on_change = self.on_radio_set_changed
-
-    def get_promotion_piece(self):
-        self.notify(f"promotion piece {self.promotion_piece}")
-        return self.promotion_piece
+        yield Button("Queen", id="queen")
+        yield Button("Rook", id="rook")
+        yield Button("Bishop", id="bishop")
+        yield Button("Knight", id="knight")
+    
 
     def on_dismiss(self):
         self.remove_self()
 
-    def on_radio_set_changed(self, event: RadioSet.Changed) -> None:
-        selected_button = event.radio_set.pressed_button
-        if selected_button:
-            self.promotion_piece = selected_button.value
-        else:
-            self.promotion_piece = None
+
+    def get_promotion_piece(self):
+        return self.promotion_piece    
+        
+
+    def on_button_pressed(self, event: Button.Pressed):
+        piece_id = event.button.id
+        promotion_piece = self.mapping.get(piece_id.capitalize())
+        self.on_promotion_selected(promotion_piece)
         self.dismiss()
