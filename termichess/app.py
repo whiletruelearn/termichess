@@ -154,6 +154,7 @@ class ChessApp(App):
         super().__init__()
         self.engine = SimpleEngine.popen_uci("stockfish")
         self.move_sound = sa.WaveObject.from_wave_file(f"{ASSETS_PATH}/sound/move.wav")
+        self.check_sound = sa.WaveObject.from_wave_file(f"{ASSETS_PATH}/sound/check.wav")
         self.player_color = "white"
         self.sound_enabled = True
         
@@ -269,7 +270,7 @@ class ChessApp(App):
             displayed_move = chess.Move(chess.square_mirror(move.from_square), chess.square_mirror(move.to_square))
         self.move_history.add_move(f"Computer ({('white' if self.player_color == 'black' else 'black')}): {displayed_move}")
         self.chess_board.render_board()
-        self.play_move_sound()
+        
         self.update_info()
         self.check_game_over()
 
@@ -287,11 +288,19 @@ class ChessApp(App):
             current_turn = "White" if self.chess_board.board.turn == chess.WHITE else "Black"
             turn = f"{current_turn} ({'Player' if current_turn.lower() == self.player_color else 'Computer'})"
             status = "Check!" if self.chess_board.board.is_check() else "Normal"
+            if status == "Check!":
+                self.play_check_sound()
+            else:
+                self.play_move_sound()
         self.info_panel.update_info(turn, status, CONF["difficulty"])
 
     def play_move_sound(self):
         if self.sound_enabled:
             self.move_sound.play()
+
+    def play_check_sound(self):
+        if self.sound_enabled:
+            self.check_sound.play()
 
     def check_game_over(self):
         if self.chess_board.board.is_game_over():
